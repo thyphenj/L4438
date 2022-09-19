@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Listener
 {
@@ -66,11 +67,12 @@ namespace Listener
             }
 
             // ------------------------------------------------------------------------------------------------
-            // -- At this point we have p, m and K determined, so let's look at J, G
+            // -- At this point we have p, m and K determined, so let's look at J, G and j
 
             // -- We already have two digits of J so ...
             {
-                int firstTwoDigits = clues['p'].Results[0].Digits[0] * 100 + clues['m'].Results[0].Digits[1] * 10;
+                int firstTwoDigits = clues['p'].GetDigit(0) * 100 + clues['m'].GetDigit(1) * 10;
+
                 for (int guess = 1; guess <= 9; guess++)
                 {
                     clues['J'].TryWith(firstTwoDigits + guess);
@@ -79,7 +81,8 @@ namespace Listener
 
             // -- First digit of m will fix G
             {
-                int firstDigit = clues['m'].Results[0].Digits[0] * 1000;
+                int firstDigit = clues['m'].GetDigit(0) * 1000;
+
                 for (int guess = 123; guess <= 987; guess++)
                 {
                     clues['G'].TryWith(guess + firstDigit);
@@ -88,52 +91,137 @@ namespace Listener
 
             // -- Last two digits of j are now fixed
             {
-                int lastTwoDigits = clues['G'].Results[0].Digits[3] *10 + clues['K'].Results[0].Digits[0] ;
+                int lastTwoDigits = clues['G'].GetDigit(3) * 10 + clues['K'].GetDigit(0);
+
                 for (int guess = 12; guess <= 98; guess++)
                 {
-                    clues['j'].TryWith(guess*100 + lastTwoDigits);
+                    clues['j'].TryWith(guess * 100 + lastTwoDigits);
                 }
+            }
+
+            // -- Last 2 digits of M are fixed and this actually fixes N!
+            {
+                int lastTwoDigits = clues['p'].GetDigit(1) * 10 + clues['m'].GetDigit(2);
+
+                clues['N'].TryCountingExcluding(lastTwoDigits);
+            }
+
+            // -- m is fixed - look at c,u
+            {
+                int mVal = clues['m'].GetNumber();
+
+                clues['c'].TryCountingExcluding(mVal);
+                clues['u'].TryCountingExcluding(mVal);
+
+                CrossMatch(clues['c'], clues['u']);
+            }
+
+            // -- Given that we have p m and N, try for M
+            {
+                int lastTwoDigits = clues['p'].GetDigit(1) * 10 + clues['m'].GetDigit(2);
+                for (int guess = 12; guess <= 98; guess++)
+                {
+                    clues['M'].TryWith(guess * 100 + lastTwoDigits);
+                }
+                CrossMatch(clues['M'], clues['N']);
+            }
+
+            // -- we have p, so try for g
+            {
+                clues['g'].TryCounting();
+
+                CrossMatch(clues['p'], clues['g']);
+            }
+
+            // -- Try for B 
+            {
+                int fromc = clues['c'].GetDigit(1) * 10 + clues['j'].GetDigit(0);
+
+                clues['B'].TryCountingExcluding(fromc);
             }
 
             // ------------------------------------------------------------------------------------------------
-            // -- Last 2 digits of M are fixed
+            // -- last two digits of h are fixed and this forces s
             {
-                int lastTwoDigits = clues['p'].Results[0].Digits[1] * 10 + clues['m'].Results[0].Digits[2];
-                for ( int guess = 12; guess <= 98; guess++)
+                int lastTwoDigits = clues['G'].Results[0].Digits[1] * 10 + clues['J'].Results[0].Digits[2];
+                clues['s'].TryCountingExcluding(lastTwoDigits);
+            }
+            {
+                int lastTwoDigits = clues['G'].Results[0].Digits[1] * 10 + clues['J'].Results[0].Digits[2];
+
+                for (int guess = 12; guess <= 98; guess++)
                 {
-                    clues['M'].TryWith(guess*100+lastTwoDigits);
+                    clues['h'].TryWith(guess * 100 + lastTwoDigits);
                 }
             }
 
-            clues['B'].TryCounting();
-            clues['C'].TryCounting();
-            clues['D'].TryCounting();
-            clues['E'].TryCounting();
-            clues['F'].TryCounting();
-
-            clues['H'].TryCounting();
-
-            clues['N'].TryCounting();
-            clues['P'].TryCounting();
-            clues['Q'].TryCounting();
+            clues['C'].TryCountingExcluding(clues['B'].GetNumber());
+            clues['D'].TryCountingExcluding(clues['j'].GetDigit(1));
+            clues['E'].TryCountingExcluding(clues['c'].GetDigit(2));
+            clues['F'].TryCountingExcluding(clues['G'].GetNumber());
+            clues['H'].TryCountingExcluding(clues['J'].GetNumber(), clues['K'].GetNumber());
+            clues['P'].TryCountingExcluding(clues['u'].GetDigit(0));
+            clues['Q'].TryCountingExcluding(clues['p'].GetDigit(2));
             clues['R'].TryCounting();
 
-            clues['b'].TryCounting();
-            clues['c'].TryCounting();
-            clues['d'].TryCounting();
-            clues['f'].TryCounting();
-            clues['g'].TryCounting();
-            clues['h'].TryCounting();
-            clues['k'].TryCounting();
-            clues['n'].TryCounting();
-            clues['q'].TryCounting();
-            clues['s'].TryCounting();
-            clues['t'].TryCounting();
-            clues['u'].TryCounting();
+            clues['b'].TryCountingExcluding(clues['M'].GetDigit(1));
+            clues['d'].TryCountingExcluding(clues['N'].GetDigit(1));
+            clues['f'].TryCountingExcluding(clues['M'].GetDigit(0));
+            clues['k'].TryCountingExcluding(clues['M'].GetDigit(1));
+            clues['n'].TryCountingExcluding(clues['B'].GetDigit(1));
+            clues['q'].TryCountingExcluding(clues['G'].GetDigit(2));
+            clues['r'].TryCounting();
+            clues['s'].TryCountingExcluding(clues['G'].GetDigit(1), clues['J'].GetDigit(2));
+            clues['t'].TryCountingExcluding(clues['j'].GetNumber());
             clues['v'].TryCounting();
 
+            foreach (var clue in clues)
+            {
+                if (clue.Value.Results.Count == 1)
+                    Console.WriteLine(clue);
+            }
+            Console.WriteLine();
+            foreach (var clue in clues)
+            {
+                if (clue.Value.Results.Count != 1)
+                    Console.WriteLine(clue);
+            }
 
             Console.WriteLine();
+        }
+
+        private static void CrossMatch(Clue clue1, Clue clue2)
+        {
+            Match(clue1, clue2);
+            Match(clue2, clue1);
+        }
+        private static void Match(Clue clue1, Clue clue2)
+        {
+            var toBeRemoved = new List<Result>();
+
+            foreach (var cVal in clue1.Results)
+            {
+                bool possibleFound = false;
+                foreach (var uVal in clue2.Results)
+                {
+                    possibleFound |= NoDigitsInCommon(cVal.Number, uVal.Number);
+                }
+                if (!possibleFound)
+                    toBeRemoved.Add(cVal);
+            }
+            foreach (var val in toBeRemoved)
+            {
+                clue1.RemoveResult(val);
+            }
+
+        }
+        private static bool NoDigitsInCommon(int number1, int number2)
+        {
+            foreach (char a in number1.ToString())
+                foreach (char b in number2.ToString())
+                    if (a == b)
+                        return false;
+            return true;
         }
     }
 }

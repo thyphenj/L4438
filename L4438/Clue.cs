@@ -10,8 +10,11 @@ namespace Listener
         public int Len { get; set; }
         public int XPos { get; set; }
         public int YPos { get; set; }
+
         private Direction Dirn { get; }
 
+        private int From;
+        private int To;
 
         public List<Result> Results { get; set; }
 
@@ -33,6 +36,8 @@ namespace Listener
             Dirn = dirn;
 
             Results = new List<Result>();
+
+            GetExtents();
         }
 
         /// <summary>
@@ -48,21 +53,41 @@ namespace Listener
             NumberOfFactors = facs;
 
             Results = new List<Result>();
+
+            GetExtents();
         }
 
-        public bool AddResult(int attempt)
+        // -- Return some values
+
+        internal int GetNumber() => Results[0].Number;
+        internal int GetDigit(int v) =>  Results[0].Digits[v];
+
+        // -- Add results
+
+        internal bool AddResult(int attempt)
         {
             Results.Add(new Result(attempt));
 
             return false;
         }
-        public bool AddResult(Result result)
+
+        internal bool AddResult(Result result)
         {
             Results.Add(result);
 
             return false;
         }
-        public bool TryWith(int attempt)
+
+        internal bool RemoveResult(Result result)
+        {
+            Results.Remove(result);
+
+            return false;
+        }
+
+        // -- Attempt at single value
+
+        internal bool TryWith(int attempt)
         {
             if (UniqueAndNonZero(attempt))
             {
@@ -75,42 +100,42 @@ namespace Listener
             }
             return true;
         }
-        public bool TryCounting()
+
+        // -- Attempt with multiple values
+
+        internal bool TryCounting()
         {
-            int from = 0;
-            int to = 0;
-
-            switch (Len)
-            {
-                case 2:
-                    from = 12;
-                    to = 98;
-                    break;
-                case 3:
-                    from = 123;
-                    to = 987;
-                    break;
-                case 4:
-                    from = 1234;
-                    to = 8765;
-                    break;
-                case 5:
-                    from = 12345;
-                    to = 98765;
-                    break;
-                case 6:
-                    from = 123456;
-                    to = 987654;
-                    break;
-            }
-
-            for (int guess = from; guess <= to; guess++)
+            for (int guess = From; guess <= To; guess++)
             {
                 TryWith(guess);
             }
             return true;
         }
-        public bool TryWithOnePower(int ind)
+
+        internal bool TryCountingExcluding(int exclude1, int exclude2)
+        {
+            for (int guess = From; guess <= To; guess++)
+            {
+                if (DoesNotContain(guess, exclude1))
+                    if (DoesNotContain(guess, exclude2))
+                        TryWith(guess);
+            }
+            return true;
+        }
+
+        internal bool TryCountingExcluding(int exclude1)
+        {
+            for (int guess = From; guess <= To; guess++)
+            {
+                if (DoesNotContain(guess, exclude1))
+                    TryWith(guess);
+            }
+            return true;
+        }
+
+        // -- Obviously POWERS
+
+        internal bool TryWithOnePower(int ind)
         {
             List<int> powersRequired = Calcs.factors(NumberOfFactors);
 
@@ -134,15 +159,28 @@ namespace Listener
             return true;
         }
 
+        // --
+
         public override string ToString()
         {
-            if (Results.Count == 1)
+            if (Results.Count == 0)
+                return "";
+
+            else if (Results.Count == 1)
                 return $"-----------------> {Results[0].Number,6}";
-            else if (Results.Count == 0)
-                return $"({Len})";
+
+            else if (Results.Count > 10)
+                return $"count={Results.Count,2}";
             else
-                return $"({Len}), count={Results.Count,2}";
+            {
+                string str = "";
+                foreach (var s in Results)
+                    str += $"{s.Number,6}  ";
+                return str;
+            }
         }
+
+        // -- local funcs
 
         private bool UniqueAndNonZero(int attempt)
         {
@@ -151,5 +189,44 @@ namespace Listener
 
             return (xx == Len && yy < 0);
         }
+
+        private void GetExtents()
+        {
+            switch (Len)
+            {
+                case 2:
+                    From = 12;
+                    To = 98;
+                    break;
+                case 3:
+                    From = 123;
+                    To = 987;
+                    break;
+                case 4:
+                    From = 1234;
+                    To = 8765;
+                    break;
+                case 5:
+                    From = 12345;
+                    To = 98765;
+                    break;
+                case 6:
+                    From = 123456;
+                    To = 987654;
+                    break;
+            }
+        }
+
+        private bool DoesNotContain(int text, int pattern)
+        {
+            string gStr = pattern.ToString();
+
+            foreach (var guessChar in text.ToString())
+                if (gStr.Contains(guessChar))
+                    return false;
+
+            return true;
+        }
+
     }
 }
