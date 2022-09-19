@@ -141,35 +141,84 @@ namespace Listener
             }
 
             // ------------------------------------------------------------------------------------------------
-            // -- last two digits of h are fixed and this forces s
             {
-                int lastTwoDigits = clues['G'].Results[0].Digits[1] * 10 + clues['J'].Results[0].Digits[2];
-                clues['s'].TryCountingExcluding(lastTwoDigits);
-            }
-            {
-                int lastTwoDigits = clues['G'].Results[0].Digits[1] * 10 + clues['J'].Results[0].Digits[2];
+                int lastTwoDigits = clues['G'].GetDigit(1) * 10 + clues['J'].GetDigit(2);
 
                 for (int guess = 12; guess <= 98; guess++)
                 {
                     clues['h'].TryWith(guess * 100 + lastTwoDigits);
                 }
+                clues['h'].ExcludeDigitsAtPosition(clues['B'].GetNumber(), 0);
+                clues['h'].ExcludeDigitsAtPosition(clues['c'].GetDigit(1), 0);
+                clues['h'].ExcludeDigitsAtPosition(clues['j'].GetDigit(0), 0);
+                clues['h'].ExcludeDigitsAtPosition(clues['j'].GetDigit(1), 1);
             }
 
             clues['C'].TryCountingExcluding(clues['B'].GetNumber());
+            clues['C'].IncludeDigitAtPosition(clues['c'].GetDigit(1), 2);
+            clues['C'].IncludeDigitAtPosition(clues['j'].GetDigit(0), 5);
+            clues['C'].ExcludeDigitsAtPosition(clues['p'].GetNumber(), 1);
+            clues['C'].ExcludeDigitsAtPosition(clues['G'].GetDigit(1), 3);
+            clues['C'].ExcludeDigitsAtPosition(clues['J'].GetDigit(2), 3);
+            clues['C'].ExcludeDigitsAtPosition(clues['N'].GetDigit(0), 3);
+            clues['C'].ExcludeDigitsAtPosition(clues['G'].GetDigit(2), 4);
+            clues['C'].ExcludeDigitsAtPosition(clues['N'].GetDigit(1), 4);
+
             clues['D'].TryCountingExcluding(clues['j'].GetDigit(1));
+            clues['D'].IncludeDigitAtPosition(clues['c'].GetDigit(2), 4);
+            clues['D'].ExcludeDigitsAtPosition(clues['B'].GetDigit(0), 0);
+
             clues['E'].TryCountingExcluding(clues['c'].GetDigit(2));
+            clues['E'].IncludeDigitAtPosition(clues['j'].GetDigit(1),2);
+            CrossMatch(clues['D'], clues['E']);
+            
             clues['F'].TryCountingExcluding(clues['G'].GetNumber());
+            clues['F'].ExcludeDigitsAtPosition(clues['B'].GetDigit(1), 0);
+            clues['F'].ExcludeDigitsAtPosition(clues['M'].GetDigit(0), 0);
+            clues['F'].ExcludeDigitsAtPosition(clues['M'].GetDigit(1), 1);
+            clues['F'].ExcludeDigitsAtPosition(clues['J'].GetNumber(), 2);
+            CrossMatch(clues['F'], clues['G']);
+
             clues['H'].TryCountingExcluding(clues['J'].GetNumber(), clues['K'].GetNumber());
+
             clues['P'].TryCountingExcluding(clues['u'].GetDigit(0));
+            clues['P'].IncludeDigitAtPosition(clues['p'].GetDigit(2), 3);
+            clues['P'].ExcludeDigitsAtPosition(clues['B'].GetDigit(0), 0);
+            clues['P'].ExcludeDigitsAtPosition(clues['B'].GetDigit(1), 1);
+            clues['P'].ExcludeDigitsAtPosition(clues['M'].GetDigit(0), 1);
+            clues['P'].ExcludeDigitsAtPosition(clues['M'].GetDigit(1), 2);
             clues['Q'].TryCountingExcluding(clues['p'].GetDigit(2));
+            clues['Q'].IncludeDigitAtPosition(clues['u'].GetDigit(0), 0);
+            clues['Q'].ExcludeDigitsAtPosition(clues['G'].GetDigit(1), 1);
+            clues['Q'].ExcludeDigitsAtPosition(clues['J'].GetDigit(2), 1);
+            clues['Q'].ExcludeDigitsAtPosition(clues['N'].GetDigit(0), 1);
+            clues['Q'].ExcludeDigitsAtPosition(clues['G'].GetDigit(2), 2);
+            clues['Q'].ExcludeDigitsAtPosition(clues['N'].GetDigit(1), 2);
+            clues['Q'].ExcludeDigitsAtPosition(clues['N'].GetDigit(2), 3);
+            CrossMatch(clues['P'], clues['Q']);
+
             clues['R'].TryCounting();
+            clues['R'].IncludeDigitAtPosition(clues['p'].GetDigit(3), 2);
+            clues['R'].IncludeDigitAtPosition(clues['u'].GetDigit(1), 3);
+            CrossMatch(clues['R'], clues['S']);
 
             clues['b'].TryCountingExcluding(clues['M'].GetDigit(1));
+
             clues['d'].TryCountingExcluding(clues['N'].GetDigit(1));
+            clues['d'].IncludeDigitAtPosition(clues['G'].GetDigit(2), 3);
+
             clues['f'].TryCountingExcluding(clues['M'].GetDigit(0));
+            clues['f'].IncludeDigitAtPosition(clues['B'].GetDigit(1), 0);
+            clues['f'].ExcludeDigitsAtPosition(clues['c'].GetDigit(2), 1);
+            clues['f'].ExcludeDigitsAtPosition(clues['j'].GetDigit(1), 1);
+
+
             clues['k'].TryCountingExcluding(clues['M'].GetDigit(1));
             clues['n'].TryCountingExcluding(clues['B'].GetDigit(1));
+
             clues['q'].TryCountingExcluding(clues['G'].GetDigit(2));
+            clues['q'].IncludeDigitAtPosition(clues['N'].GetDigit(1), 1);
+
             clues['r'].TryCounting();
             clues['s'].TryCountingExcluding(clues['G'].GetDigit(1), clues['J'].GetDigit(2));
             clues['t'].TryCountingExcluding(clues['j'].GetNumber());
@@ -195,6 +244,7 @@ namespace Listener
             Match(clue1, clue2);
             Match(clue2, clue1);
         }
+
         private static void Match(Clue clue1, Clue clue2)
         {
             var toBeRemoved = new List<Result>();

@@ -59,8 +59,21 @@ namespace Listener
 
         // -- Return some values
 
-        internal int GetNumber() => Results[0].Number;
-        internal int GetDigit(int v) =>  Results[0].Digits[v];
+        internal int GetNumber()
+        {
+            if (Results.Count != 1)
+                throw new ArgumentOutOfRangeException();
+
+            return Results[0].Number;
+        }
+
+        internal int GetDigit(int v)
+        {
+            if (Results.Count != 1)
+                throw new ArgumentOutOfRangeException();
+
+            return Results[0].Digits[v];
+        }
 
         // -- Add results
 
@@ -85,6 +98,44 @@ namespace Listener
             return false;
         }
 
+        // -- Exclude certain digits at certain position
+
+        internal bool ExcludeDigitsAtPosition(int digits, int pos)
+        {
+            string digStr = digits.ToString();
+
+            var removeThese = new List<Result>();
+
+            foreach (var res in Results)
+                foreach (var dig in digStr)
+                {
+                    if (res.Digits[pos].ToString() == dig.ToString())
+                        removeThese.Add(res);
+                }
+
+            foreach (var rem in removeThese)
+                Results.Remove(rem);
+
+            return true;
+        }
+
+        // -- Only INCLUDE specified digit at position
+
+        internal bool IncludeDigitAtPosition(int digit, int pos)
+        {
+            var removeThese = new List<Result>();
+
+            foreach (var res in Results)
+            {
+                if (res.Digits[pos] != digit)
+                    removeThese.Add(res);
+            }
+
+            foreach (var rem in removeThese)
+                Results.Remove(rem);
+
+            return true;
+        }
         // -- Attempt at single value
 
         internal bool TryWith(int attempt)
