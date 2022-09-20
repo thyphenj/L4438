@@ -119,6 +119,26 @@ namespace Listener
             return true;
         }
 
+        internal bool ExcludeDigits(int digits)
+        {
+            string digStr = digits.ToString();
+
+            var removeThese = new List<Result>();
+
+            foreach (var res in Results)
+                foreach (var dig in digStr)
+                    for (int pos = 0; pos < Len; pos++)
+                    {
+                        if (res.Digits[pos].ToString() == dig.ToString())
+                            removeThese.Add(res);
+                    }
+
+            foreach (var rem in removeThese)
+                Results.Remove(rem);
+
+            return true;
+        }
+
         // -- Only INCLUDE specified digit at position
 
         internal bool IncludeDigitAtPosition(int digit, int pos)
@@ -205,8 +225,15 @@ namespace Listener
             for (int p = 0; p < powersRequired.Count(); p++)
                 powersRequired[p]--;
 
-            TryWith(Calcs.power(ind, powersRequired[0]) * Calcs.power(jnd, powersRequired[1]));
-
+            if (powersRequired.Count == 2 && powersRequired[0] == powersRequired[1])
+            {
+                if (ind < jnd)
+                    TryWith(Calcs.power(ind, powersRequired[0]) * Calcs.power(jnd, powersRequired[1]));
+            }
+            else
+            {
+                TryWith(Calcs.power(ind, powersRequired[0]) * Calcs.power(jnd, powersRequired[1]));
+            }
             return true;
         }
 
