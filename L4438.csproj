@@ -5,4 +5,10 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="README %28copy%29.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="README %28copy%29.md" />
+  </ItemGroup>
 </Project>
